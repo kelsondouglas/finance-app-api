@@ -1,9 +1,9 @@
-import validator from "validator";
 import { badRequest, notFound, ok, serverError } from "./helpers/http.js";
 import { GetUserByIdUseCase } from "../use-cases/get-user-by-id.js";
 import { UpdateUserUseCase } from "../use-cases/update-user.js";
 import {
   checkIfEmailIsValid,
+  checkIfIdIsValid,
   checkIfPasswordIsValid,
   emailIsAlreadyInUseResponse,
   invalidIdResponse,
@@ -15,7 +15,7 @@ export class UpdateUserController {
     try {
       const { userId } = httpRequest.params;
 
-      const isIdValid = validator.isUUID(userId);
+      const isIdValid = checkIfIdIsValid(userId);
 
       if (!isIdValid) {
         return invalidIdResponse();
