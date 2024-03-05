@@ -5,15 +5,16 @@ import { PostgresUpdateUserRepository } from "../repositories/postgres/update-us
 
 export class UpdateUserUseCase {
   async execute(userId, updateUserParams) {
-    const postgresGetUserByEmailRepository =
-      new PostgresGetUserByEmailRepository();
+    if (updateUserParams.email) {
+      const postgresGetUserByEmailRepository =
+        new PostgresGetUserByEmailRepository();
 
-    const userWithProvidedEmail = postgresGetUserByEmailRepository.execute(
-      updateUserParams.email,
-    );
+      const userWithProvidedEmail =
+        await postgresGetUserByEmailRepository.execute(updateUserParams.email);
 
-    if (userWithProvidedEmail) {
-      throw new EmailAlreadyInUseError(updateUserParams.email);
+      if (userWithProvidedEmail && userWithProvidedEmail.id !== userId) {
+        throw new EmailAlreadyInUseError(updateUserParams.email);
+      }
     }
 
     const user = {
