@@ -1,5 +1,3 @@
-import { GetUserByIdUseCase } from "../use-cases/get-user-by-id.js";
-import { UpdateUserUseCase } from "../use-cases/update-user.js";
 import {
   checkIfEmailIsValid,
   checkIfIdIsValid,
@@ -8,12 +6,15 @@ import {
   invalidIdResponse,
   invalidPasswordResponse,
   badRequest,
-  notFound,
   ok,
   serverError,
 } from "./helpers/index.js";
 
 export class UpdateUserController {
+  constructor(updateUserUseCase) {
+    this.updateUserUseCase = updateUserUseCase;
+  }
+
   async execute(httpRequest) {
     try {
       const { userId } = httpRequest.params;
@@ -51,17 +52,7 @@ export class UpdateUserController {
         }
       }
 
-      const getUserByIdUseCase = new GetUserByIdUseCase();
-
-      const existingUser = await getUserByIdUseCase.execute(userId);
-
-      if (!existingUser) {
-        return notFound({ message: `User not found!` });
-      }
-
-      const updateUserUseCase = new UpdateUserUseCase();
-
-      const updatedUser = await updateUserUseCase.execute(userId, params);
+      const updatedUser = await this.updateUserUseCase.execute(userId, params);
 
       return ok(updatedUser);
     } catch (error) {
