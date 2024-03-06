@@ -19,14 +19,14 @@ export class CreateUserController {
       //pegar os dados do corpo da requisição
       const params = httpRequest.body;
 
+      console.log(params);
+
       //validar a requisição(campos obrigatórios, etc...)
       const requiredFields = ["first_name", "last_name", "email", "password"];
 
       for (const field of requiredFields) {
         if (!params[field] || !params[field].trim().length === 0) {
-          return badRequest({
-            message: `Field ${field} is required`,
-          });
+          return badRequest({ message: `Missing param: ${field}` });
         }
       }
 

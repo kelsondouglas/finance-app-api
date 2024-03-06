@@ -23,7 +23,7 @@ export class CreateTransactionUseCase {
     };
 
     const createdTransaction =
-      await this.createTransactionRepository(transaction);
+      await this.createTransactionRepository.execute(transaction);
 
     return createdTransaction;
   }
