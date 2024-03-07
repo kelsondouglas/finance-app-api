@@ -50,11 +50,11 @@ export class CreateUserController {
 
       return created(createdUser);
     } catch (error) {
+      console.error(error);
       if (error instanceof EmailAlreadyInUseError) {
         return badRequest({ message: error.message });
       }
 
-      console.error(error);
       return serverError();
     }
   }

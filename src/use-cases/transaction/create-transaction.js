@@ -11,9 +11,9 @@ export class CreateTransactionUseCase {
     const transactionId = uuidv4();
     const userId = createTransactionParams.user_id;
 
-    const existingUser = await this.getUserByIdRepository.execute(userId);
+    const user = await this.getUserByIdRepository.execute(userId);
 
-    if (!existingUser) {
+    if (!user) {
       throw new UserNotFoundError(userId);
     }
 

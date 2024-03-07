@@ -5,10 +5,11 @@ import {
   checkIfIdIsValid,
   invalidIdResponse,
   validateRequiredFields,
-  badRequest,
   created,
   serverError,
   checkIfTypeIsValid,
+  requiredFieldIsMissingResponse,
+  userNotFoundResponse,
 } from "../helpers/index.js";
 
 export class CreateTransactionController {
@@ -25,9 +26,7 @@ export class CreateTransactionController {
         validateRequiredFields(body, requiredFields);
 
       if (!requiredFieldsWerePassed) {
-        return badRequest({
-          message: `The field ${missingField} is required.`,
-        });
+        return requiredFieldIsMissingResponse(missingField);
       }
 
       const isIdValid = checkIfIdIsValid(body.user_id);
@@ -60,7 +59,7 @@ export class CreateTransactionController {
       console.error(error);
 
       if (error instanceof UserNotFoundError) {
-        return badRequest({ message: error.message });
+        return userNotFoundResponse();
       }
 
       return serverError();
