@@ -1,10 +1,15 @@
 import { UserNotFoundError } from "../../errors/user.js";
-import { badRequest, created, serverError } from "../helpers/http.js";
 import {
-  amountInvalidResponse,
+  invalidAmountResponse,
   checkIfAmountIsValid,
-} from "../helpers/transaction.js";
-import { checkIfIdIsValid, invalidIdResponse } from "../helpers/user.js";
+  checkIfIdIsValid,
+  invalidIdResponse,
+  validateRequiredFields,
+  badRequest,
+  created,
+  serverError,
+  checkIfTypeIsValid,
+} from "../helpers/index.js";
 
 export class CreateTransactionController {
   constructor(createTransactionUseCase) {
@@ -14,12 +19,15 @@ export class CreateTransactionController {
   async execute(httpRequest) {
     try {
       const body = httpRequest.body;
-      const fields = ["user_id", "name", "date", "amount", "type"];
+      const requiredFields = ["user_id", "name", "date", "amount", "type"];
 
-      for (let field of fields) {
-        if (!body[field] || body[field].trim().length === 0) {
-          return badRequest({ message: `Missing param: ${field}` });
-        }
+      const { ok: requiredFieldsWerePassed, missingField } =
+        validateRequiredFields(body, requiredFields);
+
+      if (!requiredFieldsWerePassed) {
+        return badRequest({
+          message: `The field ${missingField} is required.`,
+        });
       }
 
       const isIdValid = checkIfIdIsValid(body.user_id);
@@ -28,24 +36,18 @@ export class CreateTransactionController {
         return invalidIdResponse();
       }
 
-      if (body.amount <= 0) {
-        return badRequest({ message: "The amount must be greater than 0." });
-      }
-
       const isAmountValid = checkIfAmountIsValid(body.amount);
 
       if (!isAmountValid) {
-        return amountInvalidResponse();
+        return invalidAmountResponse();
       }
 
       const type = body.type.trim().toUpperCase();
 
-      const typeIsValid = ["EARNING", "EXPENSE", "INVESTMENT"].includes(type);
+      const typeIsValid = checkIfTypeIsValid(type);
 
       if (!typeIsValid) {
-        return badRequest({
-          message: "The type must be EARNING, EXPENSE or INVESTMENT.",
-        });
+        return;
       }
 
       const transaction = await this.createTransactionUseCase.execute({
