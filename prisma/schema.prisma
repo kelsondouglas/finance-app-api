@@ -14,9 +14,27 @@ datasource db {
 }
 
 model User {
-  id         String @id @default(uuid())
-  first_name String @db.VarChar(50)
-  last_name  String @db.VarChar(50)
-  email      String @unique @db.VarChar(100)
-  password   String @db.VarChar(100)
+  id           String         @id @default(uuid())
+  first_name   String         @db.VarChar(50)
+  last_name    String         @db.VarChar(50)
+  email        String         @unique @db.VarChar(100)
+  password     String         @db.VarChar(100)
+  Transactions Transactions[]
+}
+
+enum TransactionType {
+  EARNING
+  EXPENSE
+  INVESTMENT
+}
+
+model Transactions {
+  id      String          @id @default(uuid())
+  user_id String
+  name    String          @db.VarChar(100)
+  date    DateTime
+  amount  Int
+  type    TransactionType
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
