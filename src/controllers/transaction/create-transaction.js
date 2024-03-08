@@ -1,15 +1,11 @@
+import { ZodError } from "zod";
 import { UserNotFoundError } from "../../errors/user.js";
+import { createTransactionSchema } from "../../schemas/transaction.js";
 import {
-  invalidAmountResponse,
-  checkIfAmountIsValid,
-  checkIfIdIsValid,
-  invalidIdResponse,
-  validateRequiredFields,
   created,
   serverError,
-  checkIfTypeIsValid,
-  requiredFieldIsMissingResponse,
   userNotFoundResponse,
+  badRequest,
 } from "../helpers/index.js";
 
 export class CreateTransactionController {
@@ -19,44 +15,18 @@ export class CreateTransactionController {
 
   async execute(httpRequest) {
     try {
-      const body = httpRequest.body;
-      const requiredFields = ["user_id", "name", "date", "amount", "type"];
+      const params = httpRequest.body;
 
-      const { ok: requiredFieldsWerePassed, missingField } =
-        validateRequiredFields(body, requiredFields);
+      await createTransactionSchema.parseAsync(params);
 
-      if (!requiredFieldsWerePassed) {
-        return requiredFieldIsMissingResponse(missingField);
-      }
-
-      const isIdValid = checkIfIdIsValid(body.user_id);
-
-      if (!isIdValid) {
-        return invalidIdResponse();
-      }
-
-      const isAmountValid = checkIfAmountIsValid(body.amount);
-
-      if (!isAmountValid) {
-        return invalidAmountResponse();
-      }
-
-      const type = body.type.trim().toUpperCase();
-
-      const typeIsValid = checkIfTypeIsValid(type);
-
-      if (!typeIsValid) {
-        return;
-      }
-
-      const transaction = await this.createTransactionUseCase.execute({
-        ...body,
-        type,
-      });
+      const transaction = await this.createTransactionUseCase.execute(params);
 
       return created(transaction);
     } catch (error) {
       console.error(error);
+      if (error instanceof ZodError) {
+        return badRequest({ message: error.errors[0].message });
+      }
 
       if (error instanceof UserNotFoundError) {
         return userNotFoundResponse();
