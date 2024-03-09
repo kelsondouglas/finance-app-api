@@ -2,7 +2,7 @@ import { prisma } from "../../../../prisma/prisma.js";
 
 export class PostgresCreateUserRepository {
   async execute(createUserParams) {
-    const user = await prisma.user.create({
+    return await prisma.user.create({
       data: {
         id: createUserParams.id,
         email: createUserParams.email,
@@ -11,7 +11,5 @@ export class PostgresCreateUserRepository {
         password: createUserParams.password,
       },
     });
-
-    return user;
   }
 }
